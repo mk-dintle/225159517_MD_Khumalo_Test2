@@ -5,8 +5,8 @@ import {
   doc, serverTimestamp,
 } from 'firebase/firestore';
 import { db } from './firebase';
-import TaskForm from './components/TaskForm';
-import TaskList from './components/TaskList';
+import TaskForm from './component/TaskForm';
+import TaskList from './component/TaskList';
 
 export default function App() {
   const [tasks, setTasks] = useState([]);
