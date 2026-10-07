@@ -1,9 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { SafeAreaView, View, Text, ActivityIndicator } from 'react-native';
+import {
+  View,
+  Text,
+  ActivityIndicator,
+  StyleSheet,
+} from 'react-native';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from './firebase';
-import AuthScreen from '.../components/AuthScreen';
-import ProfileScreen from '../components/ProfileScreen';
+import AuthScreen from './Components/AuthScreen';
+import ProfileScreen from './Components/ProfileScreen';
 
 export default function App() {
   const [user, setUser] = useState(null);
@@ -22,7 +27,7 @@ export default function App() {
   // show this while Firebase checks for a saved session
   if (checking) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <View style={styles.center}>
         <ActivityIndicator size="large" />
         <Text>Checking session...</Text>
       </View>
@@ -30,8 +35,19 @@ export default function App() {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
+    <View style={styles.container}>
       {user ? <ProfileScreen user={user} /> : <AuthScreen />}
-    </SafeAreaView>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  center: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+});

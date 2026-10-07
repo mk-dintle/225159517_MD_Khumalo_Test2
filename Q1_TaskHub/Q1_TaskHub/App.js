@@ -1,8 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { SafeAreaView, Text, StyleSheet } from 'react-native';
 import {
-  collection, onSnapshot, addDoc, updateDoc, deleteDoc,
-  doc, serverTimestamp,
+  View,
+  Text,
+  StyleSheet,
+} from 'react-native';
+import {
+  collection,
+  onSnapshot,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  doc,
+  serverTimestamp,
 } from 'firebase/firestore';
 import { db } from './firebase';
 import TaskForm from './component/TaskForm';
@@ -11,23 +20,27 @@ import TaskList from './component/TaskList';
 export default function App() {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [listenError, setListenError] = useState('');
+  const [writeError, setWriteError] = useState('');
 
   // real-time listener
   useEffect(() => {
     const unsubscribe = onSnapshot(
       collection(db, 'tasks'),
       (snapshot) => {
-        const list = snapshot.docs.map((d) => ({
-          id: d.id,          // document ID
-          ...d.data(),
-        }));
+        const list = snapshot.docs.map((d) => {
+          return {
+            id: d.id,
+            ...d.data(),
+          };
+        });
+
         setTasks(list);
-        setError('');
+        setListenError('');
         setLoading(false);
       },
       (err) => {
-        setError('Could not load tasks: ' + err.message);
+        setListenError('Could not load tasks: ' + err.message);
         setLoading(false);
       }
     );
@@ -45,50 +58,71 @@ export default function App() {
         completed: false,
         createdAt: serverTimestamp(),
       });
+
+      setWriteError('');
       return true;
     } catch (err) {
-      setError('Could not add task: ' + err.message);
+      setWriteError('Could not add task: ' + err.message);
       return false;
     }
   };
 
   const toggleTask = async (id, completed) => {
     try {
-      await updateDoc(doc(db, 'tasks', id), { completed: !completed });
+      await updateDoc(doc(db, 'tasks', id), {
+        completed: !completed,
+      });
+
+      setWriteError('');
     } catch (err) {
-      setError('Could not update task: ' + err.message);
+      setWriteError('Could not update task: ' + err.message);
     }
   };
 
   const deleteTask = async (id) => {
     try {
       await deleteDoc(doc(db, 'tasks', id));
+
+      setWriteError('');
     } catch (err) {
-      setError('Could not delete task: ' + err.message);
+      setWriteError('Could not delete task: ' + err.message);
     }
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <Text style={styles.heading}>UJ Student Task Hub</Text>
+
       <TaskForm onAdd={addTask} />
+
+      {writeError !== '' && (
+        <Text style={styles.error}>{writeError}</Text>
+      )}
+
       <TaskList
         tasks={tasks}
         loading={loading}
-        error={error}
+        error={listenError}
         onToggle={toggleTask}
         onDelete={deleteTask}
       />
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, 
+  container: {
+    flex: 1,
     padding: 16,
-    paddingTop: 40 },
-
-  heading: { fontSize: 22, 
+    paddingTop: 40,
+  },
+  heading: {
+    fontSize: 22,
     fontWeight: 'bold',
-     marginBottom: 10 },
+    marginBottom: 10,
+  },
+  error: {
+    color: 'red',
+    marginBottom: 10,
+  },
 });
